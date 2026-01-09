@@ -1,0 +1,20 @@
+/* You can add global styles to this file, and also import other style files */
+/* src/styles.scss */
+
+/* 1. นำเข้า Bootstrap หลัก */
+@import "bootstrap/scss/bootstrap";
+
+/* 2. นำเข้า Bootstrap Icons (ถ้าจะใช้ไอคอน) */
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+/* 3. Global Styles (สไตล์เสริมของเราเอง) */
+body {
+  background-color: #f8f9fa; /* สีพื้นหลังเทาอ่อนๆ สบายตาแบบ Bootstrap */
+  font-family: 'Sarabun', sans-serif; /* (Optional) ถ้าคุณมีฟอนต์ไทยสวยๆ */
+}
+
+/* ปรับ Scrollbar ให้สวยงาม (แถมให้ครับ) */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #888; }

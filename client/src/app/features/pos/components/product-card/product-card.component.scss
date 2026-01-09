@@ -1,0 +1,9 @@
+/* สีเฉพาะของกัญชา */
+.bg-purple { background-color: #9c27b0; color: white; }
+.text-purple { color: #9c27b0; }
+
+/* Effect ตอนชี้เมาส์ */
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}

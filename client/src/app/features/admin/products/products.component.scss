@@ -1,0 +1,20 @@
+/* Hover Effect สำหรับกล่องอัปโหลดรูป */
+.hover-opacity-100 {
+  &:hover {
+    opacity: 1 !important;
+  }
+}
+
+.transition {
+  transition: all 0.2s ease-in-out;
+}
+
+/* ปรับแต่ง Table Header ให้ดูดี */
+thead th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: #666;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}

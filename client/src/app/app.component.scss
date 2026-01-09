@@ -1,0 +1,10 @@
+/* src/app/app.component.scss */
+
+/* ปรับแต่ง Scrollbar เมนูให้น่าใช้ */
+.nav-link {
+  transition: all 0.2s;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* สีจางๆ เวลาเอาเมาส์ชี้ */
+  }
+}

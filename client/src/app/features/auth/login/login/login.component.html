@@ -1,0 +1,45 @@
+<div class="login-bg">
+  <div class="login-card">
+    
+    <div class="brand-header">
+      <h1 class="fw-bold m-0"><i class="bi bi-flower1"></i> Racha Weed</h1>
+      <small>POS System Management</small>
+    </div>
+
+    <div class="p-4">
+      <h4 class="fw-bold text-center mb-4 text-secondary">เข้าสู่ระบบ</h4>
+
+      <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-circle-fill"></i> {{ errorMessage }}
+      </div>
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label class="form-label fw-bold text-muted">Username</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="bi bi-person-fill"></i></span>
+            <input type="text" class="form-control form-control-lg" [(ngModel)]="username" name="username" placeholder="ชื่อผู้ใช้งาน" required>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold text-muted">Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="bi bi-lock-fill"></i></span>
+            <input type="password" class="form-control form-control-lg" [(ngModel)]="password" name="password" placeholder="รหัสผ่าน" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 btn-lg fw-bold shadow-sm" [disabled]="isLoading">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ isLoading ? 'กำลังตรวจสอบ...' : 'เข้าสู่ระบบ' }}
+        </button>
+      </form>
+
+      <div class="text-center mt-4 text-muted small">
+        &copy; 2024 Racha Weed POS
+      </div>
+    </div>
+
+  </div>
+</div>

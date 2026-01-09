@@ -1,0 +1,38 @@
+# --- Dependencies (สำคัญมาก ห้ามเอาขึ้น) ---
+node_modules/
+package-lock.json
+# ถ้าอยากเก็บ version เป๊ะๆ ให้ลบ package-lock.json ออกจากรายการนี้ (ปกติแนะนำให้เอาขึ้น แต่ถ้าไม่ซีเรียสปิดไว้ก็ได้)
+
+# --- Angular & Build Output ---
+/dist/
+/tmp/
+/out-tsc/
+/bazel-out/
+
+# --- Node.js & Server ---
+npm-debug.log
+yarn-error.log
+logs/
+*.log
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# --- Environment & Security (สำคัญที่สุด ห้ามเอาขึ้น) ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- IDE & Editor (การตั้งค่าส่วนตัวของเครื่องเรา) ---
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# --- Testing ---
+coverage/

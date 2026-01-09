@@ -1,0 +1,54 @@
+<div class="d-flex vh-100 overflow-hidden">
+  
+  <aside class="d-flex flex-column p-0 bg-dark text-white" style="width: 260px; flex-shrink: 0;">
+    
+    <div class="p-4 text-center bg-success text-white mb-3">
+      <h3 class="m-0 fw-bold">Racha Weed</h3>
+      <small class="opacity-75">POS System</small>
+    </div>
+
+    <nav class="nav nav-pills flex-column mb-auto px-3">
+      
+      <li class="nav-item mb-1">
+        <a routerLink="/" 
+           routerLinkActive="active bg-success" 
+           [routerLinkActiveOptions]="{exact: true}"
+           class="nav-link text-white d-flex align-items-center gap-2">
+           <i class="bi bi-cart4"></i> ขายหน้าร้าน (POS)
+        </a>
+      </li>
+
+      <li class="nav-item mb-1">
+        <a routerLink="/admin/products" 
+           routerLinkActive="active bg-success" 
+           class="nav-link text-white d-flex align-items-center gap-2">
+           <i class="bi bi-list-check"></i> ปรับปรุงเมนู
+        </a>
+      </li>
+
+      <li class="nav-item mb-1">
+        <a routerLink="/admin/dashboard" 
+           routerLinkActive="active bg-success" 
+           class="nav-link text-white d-flex align-items-center gap-2">
+           <i class="bi bi-graph-up"></i> Dashboard
+        </a>
+      </li>
+
+    </nav>
+
+    <div class="p-3 border-top border-secondary mt-auto">
+      <div class="d-flex align-items-center gap-2">
+        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+          <i class="bi bi-person-fill"></i>
+        </div>
+        <strong>Admin User</strong>
+      </div>
+    </div>
+
+  </aside>
+
+  <main class="flex-grow-1 overflow-hidden bg-light position-relative">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

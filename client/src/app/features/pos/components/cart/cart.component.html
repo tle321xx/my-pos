@@ -1,0 +1,56 @@
+<div class="d-flex flex-column h-100">
+  
+  <div class="d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
+    <h5 class="m-0 fw-bold"><i class="bi bi-basket"></i> ตะกร้าสินค้า</h5>
+    <button (click)="clearCart()" class="btn btn-link text-danger text-decoration-none p-0 fw-bold" [disabled]="cartItems.length === 0">
+      <i class="bi bi-trash"></i> ล้าง
+    </button>
+  </div>
+
+  <div class="flex-grow-1 overflow-auto p-3">
+    <ul class="list-group list-group-flush">
+      <li *ngFor="let item of cartItems" class="list-group-item d-flex align-items-center gap-2 px-0 border-bottom">
+        
+        <div class="rounded overflow-hidden flex-shrink-0 bg-light border" style="width: 50px; height: 50px;">
+           <img *ngIf="item.image" [src]="item.image" class="w-100 h-100 object-fit-cover">
+           <div *ngIf="!item.image" class="w-100 h-100 d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera"></i></div>
+        </div>
+
+        <div class="flex-grow-1 lh-1">
+          <div class="fw-bold mb-1">{{item.name}}</div>
+          <small class="text-muted" *ngIf="item.unit === 'g'">{{ item.weight! * (item.quantity || 1) }}g</small>
+          <small class="text-muted" *ngIf="item.unit !== 'g'">{{item.unit}}</small>
+        </div>
+
+        <div class="d-flex align-items-center bg-light rounded-pill border px-1">
+          <button (click)="decreaseItem(item)" class="btn btn-sm text-danger rounded-circle p-0" style="width: 24px; height: 24px;">-</button>
+          <span class="mx-2 fw-bold" style="min-width: 20px; text-align: center;">{{item.quantity}}</span>
+          <button (click)="addToCart(item)" class="btn btn-sm text-success rounded-circle p-0" style="width: 24px; height: 24px;">+</button>
+        </div>
+
+        <div class="fw-bold text-end" style="min-width: 60px;">
+          {{ item.price * (item.quantity || 1) | number }}
+        </div>
+
+      </li>
+    </ul>
+
+    <div *ngIf="cartItems.length === 0" class="text-center py-5 text-muted opacity-50">
+      <i class="bi bi-cart-x fs-1"></i>
+      <p>ยังไม่มีรายการสินค้า</p>
+    </div>
+  </div>
+
+  <div class="p-3 bg-white border-top shadow-sm">
+    <div class="d-flex justify-content-between align-items-end mb-3">
+      <span class="text-muted">ยอดรวมทั้งสิ้น</span>
+      <span class="fs-2 fw-bold text-success">{{total | number}} ฿</span>
+    </div>
+    <button (click)="pay()" 
+            [disabled]="cartItems.length === 0"
+            class="btn btn-success w-100 py-3 fw-bold fs-5 shadow-sm">
+      <i class="bi bi-printer-fill me-2"></i> รับเงิน / พิมพ์ใบเสร็จ
+    </button>
+  </div>
+
+</div>

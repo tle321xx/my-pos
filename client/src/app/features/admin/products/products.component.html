@@ -1,0 +1,217 @@
+<div class="container-fluid p-4 h-100 d-flex flex-column">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold m-0"><i class="bi bi-pencil-square me-2"></i>จัดการเมนู</h2>
+      <small class="text-muted">เพิ่ม ลบ แก้ไข รายการสินค้าในระบบ</small>
+    </div>
+    
+    <div class="d-flex gap-2">
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-secondary" 
+                [class.active]="activeTab === 'all'" (click)="filterCategory('all')">All</button>
+        <button type="button" class="btn btn-outline-secondary" 
+                [class.active]="activeTab === 'weed'" (click)="filterCategory('weed')">Weed</button>
+        <button type="button" class="btn btn-outline-secondary" 
+                [class.active]="activeTab === 'instrument'" (click)="filterCategory('instrument')">Gear</button>
+      </div>
+<div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-secondary" ...>Gear</button>
+      </div>
+
+      <div class="btn-group ms-2" role="group">
+        <button type="button" class="btn btn-outline-primary" 
+                [class.active]="statusFilter === 'all'" (click)="filterStatus('all')">
+          ทั้งหมด
+        </button>
+        <button type="button" class="btn btn-outline-success" 
+                [class.active]="statusFilter === 'active'" (click)="filterStatus('active')">
+          <i class="bi bi-check-circle"></i> ขายอยู่
+        </button>
+        <button type="button" class="btn btn-outline-secondary" 
+                [class.active]="statusFilter === 'inactive'" (click)="filterStatus('inactive')">
+          <i class="bi bi-x-circle"></i> พักขาย
+        </button>
+      </div>
+      <button class="btn btn-success fw-bold d-flex align-items-center gap-2" (click)="openAddModal()">
+        <i class="bi bi-plus-lg"></i> เพิ่มสินค้า
+      </button>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm flex-grow-1 overflow-hidden">
+    <div class="card-body p-0 overflow-auto">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light sticky-top">
+          <tr>
+            <th class="ps-4">รูปภาพ</th>
+            <th>ชื่อสินค้า</th>
+            <th>หมวดหมู่</th>
+            <th>ราคา</th>
+            <th>สถานะ</th>
+            <th class="text-end pe-4">จัดการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of filteredProducts">
+            <td class="ps-4" style="width: 80px;">
+              <div class="rounded border bg-light d-flex align-items-center justify-content-center overflow-hidden" style="width: 50px; height: 50px;">
+                <img *ngIf="p.image" [src]="p.image" class="w-100 h-100 object-fit-cover">
+                <i *ngIf="!p.image" class="bi bi-image text-muted"></i>
+              </div>
+            </td>
+            <td>
+              <div class="fw-bold">{{p.name}}</div>
+              <small class="text-muted" *ngIf="p.unit === 'g'">{{p.weight}}g</small>
+              <small class="text-muted" *ngIf="p.unit !== 'g'">{{p.unit}}</small>
+            </td>
+            <td>
+              <span class="badge rounded-pill" 
+                    [class.bg-success]="p.category === 'weed'" 
+                    [class.bg-secondary]="p.category !== 'weed'">
+                {{p.strain || p.category}}
+              </span>
+            </td>
+            <td class="fw-bold">{{p.price | number}} ฿</td>
+            
+            <td>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" 
+                       [checked]="p.active" (change)="toggleActive(p)" style="cursor: pointer;">
+                <label class="form-check-label small" [class.text-muted]="!p.active">
+                  {{ p.active ? 'ขาย' : 'พัก' }}
+                </label>
+              </div>
+            </td>
+
+            <td class="text-end pe-4">
+              <button class="btn btn-sm btn-outline-primary me-2" (click)="openEditModal(p)">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" (click)="deleteProduct(p.id)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal fade show" tabindex="-1" *ngIf="isModalOpen && editingProduct" style="display: block; background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">
+            <i class="bi" [class.bi-plus-circle]="!isEditMode" [class.bi-pencil-square]="isEditMode"></i>
+            {{ isEditMode ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่' }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="row g-4">
+            
+            <div class="col-md-4">
+              <div class="card bg-light border-dashed h-100 text-center d-flex align-items-center justify-content-center position-relative overflow-hidden" 
+                   style="min-height: 250px; cursor: pointer; border-style: dashed !important;"
+                   (click)="fileInput.click()">
+                
+                <img *ngIf="imagePreview" [src]="imagePreview" class="w-100 h-100 object-fit-contain position-absolute top-0 start-0 bg-white">
+                
+                <div class="z-1" *ngIf="!imagePreview">
+                  <i class="bi bi-cloud-arrow-up fs-1 text-secondary"></i>
+                  <p class="small text-muted mt-2 mb-0">คลิกเพื่ออัปโหลดรูป</p>
+                </div>
+
+                <div class="position-absolute bottom-0 start-0 w-100 bg-dark bg-opacity-50 text-white py-1 small opacity-0 hover-opacity-100 transition" 
+                     *ngIf="imagePreview">
+                  เปลี่ยนรูปภาพ
+                </div>
+              </div>
+              <input type="file" #fileInput hidden (change)="onFileSelected($event)" accept="image/*">
+              <div class="form-text text-center mt-2">รองรับ .jpg, .png (Max 5MB)</div>
+            </div>
+
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label class="form-label fw-bold">ชื่อสินค้า <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" [(ngModel)]="editingProduct.name" placeholder="เช่น OG Kush">
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label fw-bold">ราคา <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" [(ngModel)]="editingProduct.price">
+                    <span class="input-group-text">฿</span>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-bold">หน่วย</label>
+                  <select class="form-select" [(ngModel)]="editingProduct.unit">
+                    <option value="g">กรัม (g)</option>
+                    <option value="pcs">ชิ้น (pcs)</option>
+                    <option value="pack">แพ็ค</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mb-3" *ngIf="editingProduct.unit === 'g'">
+                <label class="form-label">น้ำหนักต่อหน่วย (g)</label>
+                <input type="number" class="form-control" [(ngModel)]="editingProduct.weight" step="0.1">
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label">หมวดหมู่</label>
+                  <select class="form-select" [(ngModel)]="editingProduct.category">
+                    <option value="weed">Weed (ดอก)</option>
+                    <option value="instrument">อุปกรณ์</option>
+                  </select>
+                </div>
+                <div class="col-6" *ngIf="editingProduct.category === 'weed'">
+                  <label class="form-label">สายพันธุ์</label>
+                  <select class="form-select" [(ngModel)]="editingProduct.strain">
+                    <option value="Indica">Indica</option>
+                    <option value="Sativa">Sativa</option>
+                    <option value="Hybrid">Hybrid</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="bg-success-subtle p-3 rounded-3 border border-success-subtle" *ngIf="editingProduct.category === 'weed'">
+                <h6 class="text-success fw-bold mb-3"><i class="bi bi-flower1 me-1"></i> ข้อมูลสายพันธุ์</h6>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <label class="form-label small">THC (%)</label>
+                    <input type="number" class="form-control form-control-sm" [(ngModel)]="editingProduct.thc" placeholder="24">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small">สัดส่วน (Ratio)</label>
+                    <input type="text" class="form-control form-control-sm" [(ngModel)]="editingProduct.ratio" placeholder="In 60/40">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small">กลิ่น (Terpenes)</label>
+                    <input type="text" class="form-control form-control-sm" [(ngModel)]="editingProduct.scent" placeholder="มะนาว, ดิน">
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">ยกเลิก</button>
+          <button type="button" class="btn btn-success fw-bold px-4" (click)="saveProduct()" [disabled]="!editingProduct.name">
+            <i class="bi bi-save me-1"></i> บันทึกข้อมูล
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>

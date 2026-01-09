@@ -1,0 +1,77 @@
+<div class="d-flex flex-column h-100">
+  
+  <div class="px-3 py-2 border-bottom bg-white">
+    <ul class="nav nav-pills flex-nowrap overflow-auto pb-1" style="gap: 10px;">
+      
+      <li class="nav-item">
+        <button class="nav-link d-flex align-items-center gap-2" 
+                [class.active]="activeCategory === 'all'"
+                (click)="selectCategory('all')">
+          <i class="bi bi-grid-fill"></i> All
+        </button>
+      </li>
+
+      <li class="nav-item">
+        <button class="nav-link d-flex align-items-center gap-2" 
+                [class.active]="activeCategory === 'Indica'"
+                (click)="selectCategory('Indica')">
+          <i class="bi bi-circle-fill text-purple"></i> Indica
+        </button>
+      </li>
+
+      <li class="nav-item">
+        <button class="nav-link d-flex align-items-center gap-2" 
+                [class.active]="activeCategory === 'Sativa'"
+                (click)="selectCategory('Sativa')">
+          <i class="bi bi-circle-fill text-warning"></i> Sativa
+        </button>
+      </li>
+
+      <li class="nav-item">
+        <button class="nav-link d-flex align-items-center gap-2" 
+                [class.active]="activeCategory === 'Hybrid'"
+                (click)="selectCategory('Hybrid')">
+          <i class="bi bi-circle-fill text-info"></i> Hybrid
+        </button>
+      </li>
+
+      <li class="nav-item">
+        <button class="nav-link d-flex align-items-center gap-2" 
+                [class.active]="activeCategory === '3g100'"
+                (click)="selectCategory('3g100')">
+          <i class="bi bi-fire text-danger"></i> 3G 100
+        </button>
+      </li>
+
+      <li class="nav-item">
+        <button class="nav-link d-flex align-items-center gap-2" 
+                [class.active]="activeCategory === 'instrument'"
+                (click)="selectCategory('instrument')">
+          <i class="bi bi-tools"></i> Gear
+        </button>
+      </li>
+
+    </ul>
+  </div>
+
+  <div class="flex-grow-1 overflow-auto p-3 bg-light">
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
+      
+      <div class="col" *ngFor="let p of filteredProducts">
+        <app-product-card 
+          [product]="p" 
+          [quantity]="getQuantity(p.id)"
+          (add)="onAddItem($event)"
+          (remove)="onRemoveItem($event)">
+        </app-product-card>
+      </div>
+
+      <div *ngIf="filteredProducts.length === 0" class="col-12 text-center py-5 text-muted">
+        <i class="bi bi-inbox fs-1"></i>
+        <p class="mt-2">ไม่พบสินค้าในหมวดนี้</p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
