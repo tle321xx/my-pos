@@ -8,30 +8,15 @@
     
     <div class="d-flex gap-2">
       <div class="btn-group" role="group">
-        <button type="button" class="btn btn-outline-secondary" 
-                [class.active]="activeTab === 'all'" (click)="filterCategory('all')">All</button>
-        <button type="button" class="btn btn-outline-secondary" 
-                [class.active]="activeTab === 'weed'" (click)="filterCategory('weed')">Weed</button>
-        <button type="button" class="btn btn-outline-secondary" 
-                [class.active]="activeTab === 'instrument'" (click)="filterCategory('instrument')">Gear</button>
-      </div>
-<div class="btn-group" role="group">
-        <button type="button" class="btn btn-outline-secondary" ...>Gear</button>
+        <button type="button" class="btn btn-outline-secondary" [class.active]="activeTab === 'all'" (click)="filterCategory('all')">All</button>
+        <button type="button" class="btn btn-outline-secondary" [class.active]="activeTab === 'weed'" (click)="filterCategory('weed')">Weed</button>
+        <button type="button" class="btn btn-outline-secondary" [class.active]="activeTab === 'instrument'" (click)="filterCategory('instrument')">Gear</button>
       </div>
 
       <div class="btn-group ms-2" role="group">
-        <button type="button" class="btn btn-outline-primary" 
-                [class.active]="statusFilter === 'all'" (click)="filterStatus('all')">
-          ทั้งหมด
-        </button>
-        <button type="button" class="btn btn-outline-success" 
-                [class.active]="statusFilter === 'active'" (click)="filterStatus('active')">
-          <i class="bi bi-check-circle"></i> ขายอยู่
-        </button>
-        <button type="button" class="btn btn-outline-secondary" 
-                [class.active]="statusFilter === 'inactive'" (click)="filterStatus('inactive')">
-          <i class="bi bi-x-circle"></i> พักขาย
-        </button>
+        <button type="button" class="btn btn-outline-primary" [class.active]="statusFilter === 'all'" (click)="filterStatus('all')">ทั้งหมด</button>
+        <button type="button" class="btn btn-outline-success" [class.active]="statusFilter === 'active'" (click)="filterStatus('active')"><i class="bi bi-check-circle"></i> ขายอยู่</button>
+        <button type="button" class="btn btn-outline-secondary" [class.active]="statusFilter === 'inactive'" (click)="filterStatus('inactive')"><i class="bi bi-x-circle"></i> พักขาย</button>
       </div>
       <button class="btn btn-success fw-bold d-flex align-items-center gap-2" (click)="openAddModal()">
         <i class="bi bi-plus-lg"></i> เพิ่มสินค้า
@@ -39,7 +24,7 @@
     </div>
   </div>
 
-  <div class="card border-0 shadow-sm flex-grow-1 overflow-hidden">
+  <div class="card border-0 shadow-sm flex-grow-1 overflow-hidden d-flex flex-column">
     <div class="card-body p-0 overflow-auto">
       <table class="table table-hover align-middle mb-0">
         <thead class="table-light sticky-top">
@@ -53,7 +38,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let p of filteredProducts">
+          <tr *ngFor="let p of pagedProducts">
             <td class="ps-4" style="width: 80px;">
               <div class="rounded border bg-light d-flex align-items-center justify-content-center overflow-hidden" style="width: 50px; height: 50px;">
                 <img *ngIf="p.image" [src]="p.image" class="w-100 h-100 object-fit-cover">
@@ -66,42 +51,43 @@
               <small class="text-muted" *ngIf="p.unit !== 'g'">{{p.unit}}</small>
             </td>
             <td>
-              <span class="badge rounded-pill" 
-                    [class.bg-success]="p.category === 'weed'" 
-                    [class.bg-secondary]="p.category !== 'weed'">
+              <span class="badge rounded-pill" [class.bg-success]="p.category === 'weed'" [class.bg-secondary]="p.category !== 'weed'">
                 {{p.strain || p.category}}
               </span>
             </td>
             <td class="fw-bold">{{p.price | number}} ฿</td>
-            
             <td>
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" 
-                       [checked]="p.active" (change)="toggleActive(p)" style="cursor: pointer;">
-                <label class="form-check-label small" [class.text-muted]="!p.active">
-                  {{ p.active ? 'ขาย' : 'พัก' }}
-                </label>
+                <input class="form-check-input" type="checkbox" role="switch" [checked]="p.active" (change)="toggleActive(p)" style="cursor: pointer;">
+                <label class="form-check-label small" [class.text-muted]="!p.active">{{ p.active ? 'ขาย' : 'พัก' }}</label>
               </div>
             </td>
-
             <td class="text-end pe-4">
-              <button class="btn btn-sm btn-outline-primary me-2" (click)="openEditModal(p)">
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button class="btn btn-sm btn-outline-danger" (click)="deleteProduct(p.id)">
-                <i class="bi bi-trash"></i>
-              </button>
+              <button class="btn btn-sm btn-outline-primary me-2" (click)="openEditModal(p)"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-sm btn-outline-danger" (click)="deleteProduct(p.id)"><i class="bi bi-trash"></i></button>
             </td>
+          </tr>
+          
+          <tr *ngIf="pagedProducts.length === 0">
+            <td colspan="6" class="text-center py-5 text-muted">ไม่พบข้อมูลสินค้า</td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="border-top bg-white">
+      <mat-paginator [length]="filteredProducts.length"
+                     [pageSize]="pageSize"
+                     [pageSizeOptions]="[5, 10, 25, 100]"
+                     (page)="onPageChange($event)"
+                     aria-label="Select page">
+      </mat-paginator>
     </div>
   </div>
 
   <div class="modal fade show" tabindex="-1" *ngIf="isModalOpen && editingProduct" style="display: block; background: rgba(0,0,0,0.5);">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
-        
         <div class="modal-header">
           <h5 class="modal-title fw-bold">
             <i class="bi" [class.bi-plus-circle]="!isEditMode" [class.bi-pencil-square]="isEditMode"></i>
@@ -213,5 +199,4 @@
       </div>
     </div>
   </div>
-
 </div>

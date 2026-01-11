@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Product } from '../../../../core/models/product';
 import { CartService } from '../../../../core/services/cart.service';
 import { ProductCardComponent } from '../product-card/product-card.component';
+import { AuthService } from '../../../../core/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-product-list',
@@ -19,8 +21,11 @@ export class ProductListComponent implements OnInit {
   activeCategory: string = 'all'; 
 
 cartItemsMap: Map<number, number> = new Map(); // เก็บ id -> quantity
+currentUser: any;
 
-  constructor(private cartService: CartService) {}
+  constructor(private cartService: CartService, private authService: AuthService, private router: Router) {
+     this.authService.currentUser$.subscribe(u => this.currentUser = u);
+  }
 
   ngOnInit() {
     // 1. โหลดสินค้าทั้งหมด
@@ -75,4 +80,10 @@ cartItemsMap: Map<number, number> = new Map(); // เก็บ id -> quantity
       this.filteredProducts = this.allProducts.filter(p => p.category === 'instrument');
     }
   }
+
+  goToBackOffice() {
+    console.log('Go to Admin Clicked!'); // เช็คใน Console ว่าปุ่มทำงานไหม
+    this.router.navigate(['/admin/dashboard']);
+  }
+  
 }

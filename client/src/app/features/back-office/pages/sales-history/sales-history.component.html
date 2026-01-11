@@ -1,0 +1,151 @@
+<div class="container-fluid p-4">
+  <h2 class="fw-bold mb-4"><i class="bi bi-clock-history"></i> ประวัติการขาย</h2>
+
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4 sortable" (click)="sort('receipt_no')">
+              เลขที่บิล <i class="bi" [ngClass]="getSortIcon('receipt_no')"></i>
+            </th>
+            <th class="sortable" (click)="sort('created_at')">
+              วันที่/เวลา <i class="bi" [ngClass]="getSortIcon('created_at')"></i>
+            </th>
+            <th>พนักงาน</th>
+            <th>การชำระเงิน</th>
+            <th class="text-end pe-4 sortable" (click)="sort('total_price')">
+              ยอดรวม <i class="bi" [ngClass]="getSortIcon('total_price')"></i>
+            </th>
+            <th class="text-end pe-4">จัดการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of orders">
+            <td class="ps-4 fw-bold text-primary">{{ order.receipt_no }}</td>
+            <td>
+              {{ order.created_at | date:'dd/MM/yyyy HH:mm' }}
+            </td>
+            <td><span class="badge bg-light text-dark border">{{ order.staff_name || '-' }}</span></td>
+            <td>
+              <span class="badge" 
+                [class.bg-success]="order.payment_method === 'cash'" 
+                [class.bg-info]="order.payment_method === 'transfer'">
+                {{ order.payment_method | uppercase }}
+              </span>
+            </td>
+            <td class="text-end pe-4 fw-bold">{{ order.total_price | number }} ฿</td>
+            
+            <td class="text-end pe-4">
+              <button class="btn btn-sm btn-outline-primary" (click)="viewOrder(order.id)">
+                <i class="bi bi-eye-fill"></i> ดู
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="orders.length === 0">
+            <td colspan="6" class="text-center py-5 text-muted">ไม่พบประวัติการขาย</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="border-top bg-white">
+      <mat-paginator 
+        [length]="totalItems"
+        [pageSize]="pageSize"
+        [pageIndex]="pageIndex"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)">
+      </mat-paginator>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade show" tabindex="-1" *ngIf="isModalOpen && selectedOrder" 
+     style="display: block; background: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      
+      <div class="modal-header bg-primary text-white">
+        <div>
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-receipt"></i> ใบเสร็จ {{ selectedOrder.receipt_no }}
+          </h5>
+          <small class="opacity-75">
+            <i class="bi bi-calendar3"></i> {{ selectedOrder.created_at | date:'dd/MM/yyyy HH:mm' }} น.
+          </small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
+      </div>
+
+      <div class="modal-body p-0">
+        <div class="row g-0">
+          
+          <div class="col-md-4 bg-light border-end p-4">
+            <h6 class="fw-bold text-secondary mb-3">ข้อมูลการขาย</h6>
+            <div class="mb-2">
+              <small class="text-muted d-block">พนักงานขาย</small>
+              <strong>{{ selectedOrder.staff_name || '-' }}</strong>
+            </div>
+            <div class="mb-2">
+              <small class="text-muted d-block">วิธีชำระเงิน</small>
+              <span class="badge bg-secondary">{{ selectedOrder.payment_method | uppercase }}</span>
+            </div>
+            <hr>
+            <h6 class="fw-bold text-secondary mb-3">ลูกค้า</h6>
+            <div *ngIf="selectedOrder.customer_name; else noCustomer">
+              <div class="mb-2">
+                <i class="bi bi-person-fill text-primary me-1"></i> 
+                <strong>{{ selectedOrder.customer_name }}</strong>
+              </div>
+              <div class="mb-2 text-muted small" *ngIf="selectedOrder.customer_phone">
+                <i class="bi bi-telephone-fill me-1"></i> {{ selectedOrder.customer_phone }}
+              </div>
+            </div>
+            <ng-template #noCustomer>
+              <span class="text-muted fst-italic">- ลูกค้าทั่วไป -</span>
+            </ng-template>
+          </div>
+
+          <div class="col-md-8 p-4">
+            <h6 class="fw-bold text-secondary mb-3">รายการสินค้า ({{ selectedOrder.items.length }} รายการ)</h6>
+            
+            <div class="table-responsive border rounded mb-3" style="max-height: 300px;">
+              <table class="table table-sm table-striped mb-0">
+                <thead class="table-light sticky-top">
+                  <tr>
+                    <th class="ps-3">สินค้า</th>
+                    <th class="text-center">จำนวน</th>
+                    <th class="text-end pe-3">รวม</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of selectedOrder.items">
+                    <td class="ps-3">
+                      <div>{{ item.product_name }}</div>
+                      <small class="text-muted" *ngIf="item.strain">({{ item.strain }})</small>
+                    </td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-end pe-3">{{ item.total_line_price | number }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center bg-success bg-opacity-10 p-3 rounded border border-success">
+              <span class="fw-bold text-success">ยอดสุทธิ</span>
+              <span class="fs-4 fw-bold text-success">{{ selectedOrder.total_price | number }} ฿</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">ปิดหน้าต่าง</button>
+      </div>
+
+    </div>
+  </div>
+</div>

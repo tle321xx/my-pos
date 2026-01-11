@@ -1,6 +1,7 @@
 // server/controllers/order.controller.js
 const printer = require('../config/printer.config');
 const db = require('../config/database'); // <--- อย่าลืมบรรทัดนี้ ต้อง import database มาด้วย
+const logger = require('../services/log.service');
 
 exports.createOrder = async (req, res) => {
   // รับค่า items, total, customer, paymentMethod จากหน้าบ้าน
@@ -55,6 +56,12 @@ exports.createOrder = async (req, res) => {
 
     console.log(`Order Saved: ${receiptNo}`);
 
+    // สมมติว่า req.user มาจาก Token (เดี๋ยวเราต้องแก้ Middleware ให้แปะ user มาด้วย)
+    const userId = req.user ? req.user.id : 0; 
+    const username = req.user ? req.user.name : 'System';
+
+    logger.log(userId, username, 'SALE', `เปิดบิลเลขที่ ${receiptNo} ยอด ${total} บาท`, req);
+
     // --- 2. สั่งพิมพ์ใบเสร็จ (โค้ดเดิม) ---
     printer.clear();
     printer.alignCenter();
@@ -104,5 +111,103 @@ exports.createOrder = async (req, res) => {
   } catch (dbError) {
     console.error("Database Error:", dbError);
     res.status(500).json({ success: false, message: "Failed to save order" });
+  }
+};
+
+exports.getRecentOrders = (req, res) => {
+  try {
+    // ดึง 5 รายการล่าสุด เรียงจาก id มากไปน้อย (ล่าสุดอยู่บน)
+    const orders = db.prepare(`
+      SELECT id, receipt_no, total_price, created_at, payment_method 
+      FROM orders 
+      ORDER BY id DESC 
+      LIMIT 5
+    `).all();
+
+    // จัด Format วันที่และเวลาให้สวยงามก่อนส่งกลับ (Optional)
+    const formattedOrders = orders.map(o => ({
+      id: o.id,             // <--- [แก้] ส่ง ID จริงๆ ที่เป็นตัวเลข
+      receiptNo: o.receipt_no,
+      time: new Date(o.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+      staff: 'System', // (ถ้าในอนาคตเก็บ user_id ใน orders ค่อยมาจอยตาราง users)
+      items: 0, // (ถ้าอยากได้จำนวนชิ้น ต้อง count จาก order_items เพิ่ม)
+      total: o.total_price
+    }));
+
+    res.json(formattedOrders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getAllOrders = (req, res) => {
+  try {
+    // 1. รับค่าจาก Frontend (ถ้าไม่ส่งมา ให้ใช้ค่า Default)
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    
+    // รับค่า Sort (ป้องกัน SQL Injection โดยการเช็คค่าที่ส่งมา)
+    const validSortCols = ['id', 'receipt_no', 'total_price', 'created_at', 'payment_method'];
+    const sortBy = validSortCols.includes(req.query.sortBy) ? req.query.sortBy : 'id';
+    const sortOrder = req.query.sortOrder === 'asc' ? 'ASC' : 'DESC';
+
+    // 2. Query ข้อมูล
+    const orders = db.prepare(`
+      SELECT o.*, u.name as staff_name 
+      FROM orders o
+      LEFT JOIN users u ON o.staff_name = u.username -- (สมมติว่ามีการเก็บ staff)
+      ORDER BY ${sortBy} ${sortOrder}
+      LIMIT ? OFFSET ?
+    `).all(limit, offset);
+
+    // 3. นับจำนวนทั้งหมด (เพื่อทำ Pagination)
+    const countResult = db.prepare('SELECT COUNT(*) as count FROM orders').get();
+    const totalItems = countResult.count;
+
+    res.json({
+      data: orders,
+      totalItems: totalItems,
+      currentPage: page,
+      totalPages: Math.ceil(totalItems / limit)
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getOrderById = (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. ดึงข้อมูลหัวบิล + Join ตารางลูกค้า
+    const order = db.prepare(`
+      SELECT o.*, 
+             c.name as customer_name, 
+             c.phone as customer_phone, 
+             c.line_id as customer_line
+      FROM orders o
+      LEFT JOIN customers c ON o.customer_id = c.id
+      WHERE o.id = ?
+    `).get(id);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // 2. ดึงรายการสินค้าในบิลนั้น
+    const items = db.prepare(`
+      SELECT * FROM order_items WHERE order_id = ?
+    `).all(id);
+
+    // ส่งข้อมูลกลับไปเป็นก้อนเดียว
+    res.json({
+      ...order,
+      items: items
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

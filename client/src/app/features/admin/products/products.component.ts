@@ -1,14 +1,15 @@
 // src/app/features/admin/products/products.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator'; // เพิ่ม Paginator
 import { ProductService } from '../../../core/services/product.service';
 import { Product } from '../../../core/models/product';
 
 @Component({
   selector: 'app-admin-products',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatPaginatorModule],
   templateUrl: './products.component.html',
   styleUrl: './products.component.scss'
 })
@@ -26,6 +27,13 @@ export class ProductsComponent implements OnInit {
   editingProduct: Product | null = null;
   selectedFile: File | null = null;
   imagePreview: string | ArrayBuffer | null = null;
+
+  pagedProducts: Product[] = []; // ข้อมูลที่จะแสดงผลจริงในหน้าปัจจุบัน (ตัดมาแล้ว)
+  pageSize = 10; // จำนวนต่อหน้า
+  pageIndex = 0; // หน้าปัจจุบัน (เริ่มที่ 0)
+  
+  // อ้างอิงถึงตัว Paginator ใน HTML เพื่อสั่ง reset หน้าเวลากรองข้อมูล
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(private productService: ProductService) {}
 
@@ -68,6 +76,25 @@ export class ProductsComponent implements OnInit {
     }
 
     this.filteredProducts = result;
+
+    // [เพิ่ม] เมื่อกรองข้อมูลเสร็จ ให้รีเซ็ตกลับไปหน้า 1 และตัดข้อมูลใหม่
+    this.pageIndex = 0;
+    if (this.paginator) this.paginator.firstPage(); 
+    this.updatePagedList();
+  }
+
+  // [เพิ่ม] ฟังก์ชันรับ Event เมื่อผู้ใช้กดเปลี่ยนหน้า
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.updatePagedList();
+  }
+
+  // [เพิ่ม] ฟังก์ชันตัดข้อมูล (Client-side Pagination)
+  updatePagedList() {
+    const startIndex = this.pageIndex * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.pagedProducts = this.filteredProducts.slice(startIndex, endIndex);
   }
 
   toggleActive(product: Product) {

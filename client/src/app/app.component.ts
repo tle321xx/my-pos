@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterModule } from '@angular/router'; // import RouterModule เพื่อใช้ routerLink
+import { RouterOutlet, RouterModule } from '@angular/router';
+import { AuthService } from './core/services/auth.service'; // import เพิ่ม
 
 @Component({
   selector: 'app-root',
@@ -10,6 +11,18 @@ import { RouterOutlet, RouterModule } from '@angular/router'; // import RouterMo
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  // ควบคุมการเลือกเมนู
-  currentMenu = 'pos';
+  isLoggedIn = false;
+  currentUser: any = null;
+
+  constructor(private authService: AuthService) {
+    // Subscribe ดูสถานะ User แบบ Real-time
+    this.authService.currentUser$.subscribe(user => {
+      this.isLoggedIn = !!user;
+      this.currentUser = user;
+    });
+  }
+
+  logout() {
+    this.authService.logout();
+  }
 }

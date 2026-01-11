@@ -1,12 +1,19 @@
-// src/app/app.config.ts
 import { ApplicationConfig } from '@angular/core';
-import { provideRouter } from '@angular/router'; // 1. import นี้
-import { provideHttpClient } from '@angular/common/http';
-import { routes } from './app.routes'; // 2. import routes ที่เพิ่งสร้าง
+import { provideRouter } from '@angular/router';
+import { provideHttpClient, withInterceptors } from '@angular/common/http'; // [เพิ่ม] withInterceptors
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async'; // 1. เพิ่มบรรทัดนี้
+import { routes } from './app.routes';
+import { authInterceptor } from './core/interceptors/auth.interceptor'; // [เพิ่ม] นำเข้าไฟล์ที่เพิ่งสร้าง
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes), // 3. ใส่เข้าไปตรงนี้
-    provideHttpClient()
+    provideRouter(routes),
+    // [แก้ไข] บรรทัดนี้สำคัญมาก! บอกให้ Angular ใช้ Interceptor
+    provideHttpClient(withInterceptors([authInterceptor])),
+    provideAnimationsAsync() ,
+    
+    // 2. เพิ่มบรรทัดนี้ เพื่อลงทะเบียน Chart.js
+    provideCharts(withDefaultRegisterables())
   ]
 };

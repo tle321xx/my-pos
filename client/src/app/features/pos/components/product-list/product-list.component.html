@@ -10,7 +10,13 @@
           <i class="bi bi-grid-fill"></i> All
         </button>
       </li>
-
+<div class="ms-3 border-start ps-3" *ngIf="currentUser">
+   <button (click)="goToBackOffice()" 
+      class="btn btn-dark fw-bold d-flex align-items-center gap-2 text-nowrap shadow-sm">
+      <i class="bi bi-speedometer2"></i> 
+      <span class="d-none d-md-inline">ระบบหลังบ้าน</span>
+   </button>
+</div>
       <li class="nav-item">
         <button class="nav-link d-flex align-items-center gap-2" 
                 [class.active]="activeCategory === 'Indica'"

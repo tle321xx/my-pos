@@ -94,6 +94,20 @@ db.exec(`
   )
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS activity_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    username TEXT,
+    action TEXT,        -- ประเภท: LOGIN, SALE, PRODUCT_ADD, PRODUCT_DELETE, USER_ADD
+    description TEXT,   -- รายละเอียด: "ขายบิล #1005 ยอด 500บ.", "ลบสินค้า ID 5"
+    ip_address TEXT,    -- เก็บ IP เผื่อตรวจสอบ
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+console.log("Activity logs table ready.");
+
 // [SEED DATA] เช็คว่ามีข้อมูลไหม ถ้าไม่มีให้เพิ่มข้อมูลตั้งต้น
 const count = db.prepare('SELECT count(*) as count FROM products').get().count;
 
@@ -125,6 +139,34 @@ if (userCount === 0) {
   `);
   insertUser.run('admin', hash, 'Super Admin', 'admin');
   console.log('Default Admin created: username=admin, password=admin1234');
+}
+
+// [เพิ่มส่วนนี้] อัปเดตตารางให้มีช่องเก็บรูป (Migration แบบง่าย)
+try {
+  db.exec("ALTER TABLE users ADD COLUMN image TEXT");
+  console.log("Added 'image' column to users table.");
+} catch (e) { /* ถ้ามีอยู่แล้วจะ error ก็ปล่อยผ่านไป */ }
+
+try {
+  db.exec("ALTER TABLE customers ADD COLUMN image TEXT");
+  console.log("Added 'image' column to customers table.");
+} catch (e) { /* ถ้ามีอยู่แล้วจะ error ก็ปล่อยผ่านไป */ }
+
+try {
+  db.exec("ALTER TABLE activity_logs ADD COLUMN username TEXT");
+  console.log("✅ Added 'username' column to activity_logs.");
+} catch (e) {
+  // ถ้ามีอยู่แล้วจะ Error ก็ปล่อยผ่านไป
+}
+
+// ========================================================
+// [เพิ่มส่วนนี้] เช็คคอลัมน์ ip_address ด้วย (เผื่อเวอร์ชันเก่าไม่มี)
+// ========================================================
+try {
+  db.exec("ALTER TABLE activity_logs ADD COLUMN ip_address TEXT");
+  console.log("✅ Added 'ip_address' column to activity_logs.");
+} catch (e) {
+  // ปล่อยผ่าน
 }
 
 console.log('Connected to SQLite Database at', dbPath);

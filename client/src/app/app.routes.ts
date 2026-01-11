@@ -1,26 +1,24 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: 'login',
-    //loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent)
+    loadComponent: () => import('./features/auth/login/login/login.component').then(m => m.LoginComponent)
   },
   {
-    path: '',
-    loadComponent: () => import('./features/pos/pos.component').then(m => m.PosComponent)
-  },
-  // เพิ่ม Route ใหม่ตรงนี้
-  {
-    path: 'admin/products',
-    loadComponent: () => import('./features/admin/products/products.component').then(m => m.ProductsComponent)
+    path: '', // หน้าแรกคือ POS (เต็มจอ ไม่มี Sidebar Admin)
+    loadComponent: () => import('./features/pos/pos.component').then(m => m.PosComponent),
+    canActivate: [authGuard]
   },
   {
-    path: 'admin/dashboard', // เดี๋ยวค่อยสร้างไฟล์นี้ทีหลัง
-    redirectTo: 'admin/products' // ชั่วคราว: ให้เด้งไปหน้า products ก่อน
+    path: 'admin', // โซนหลังบ้าน
+    // โหลด Module BackOffice (แบบ Lazy Load)
+    loadChildren: () => import('./features/back-office/back-office.module').then(m => m.BackOfficeModule),
+    canActivate: [authGuard]
   },
   {
     path: '**',
-    redirectTo: '',
-    pathMatch: 'full'
+    redirectTo: ''
   }
 ];
