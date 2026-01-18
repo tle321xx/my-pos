@@ -1,6 +1,7 @@
 // server/controllers/product.controller.js
 const ProductService = require('../services/product.service');
 const logger = require('../services/log.service');
+const db = require('../config/database');
 
 exports.getProducts = (req, res) => {
   try {
@@ -67,4 +68,32 @@ exports.deleteProduct = (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
+};
+
+exports.updateStock = (req, res) => {
+  const { id } = req.params;
+  const { amount } = req.body;
+  
+  try {
+    // 1. ดึงสต็อกเก่ามาก่อน
+    const product = db.prepare('SELECT name, stock FROM products WHERE id = ?').get(id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    // 2. คำนวณสต็อกใหม่
+    const newStock = (product.stock || 0) + parseFloat(amount);
+    
+    // 3. อัปเดตลง DB
+    db.prepare('UPDATE products SET stock = ? WHERE id = ?').run(newStock, id);
+
+    // 4. บันทึก Log
+    // ใช้ req.user?.id เพื่อกัน Error กรณีระบบ Auth มีปัญหา
+    logger.log(req.user?.id || 0, req.user?.username || 'System', 'RESTOCK', 
+      `เติมสต็อก ${product.name}: ${product.stock} -> ${newStock} (${amount > 0 ? '+' : ''}${amount})`, req);
+
+    res.json({ success: true, newStock });
+  } catch (err) {
+    console.error(err); // ปริ้น Error ลง Terminal ด้วยจะได้เห็นชัดๆ
+    res.status(500).json({ success: false, message: err.message });
+  }
+
 };

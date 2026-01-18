@@ -51,3 +51,23 @@ exports.getCustomerHistory = (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.updateCustomer = (req, res) => {
+  const { id } = req.params;
+  const { name, id_card, phone, line_id } = req.body;
+  const serverUrl = `${req.protocol}://${req.get('host')}`;
+  
+  try {
+    if (req.file) {
+       const imagePath = `${serverUrl}/uploads/${req.file.filename}`;
+       db.prepare('UPDATE customers SET name=?, id_card=?, phone=?, line_id=?, image=? WHERE id=?')
+         .run(name, id_card, phone, line_id, imagePath, id);
+    } else {
+       db.prepare('UPDATE customers SET name=?, id_card=?, phone=?, line_id=? WHERE id=?')
+         .run(name, id_card, phone, line_id, id);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

@@ -169,6 +169,12 @@ try {
   // ปล่อยผ่าน
 }
 
+try {
+  db.exec("ALTER TABLE products ADD COLUMN stock REAL DEFAULT 0"); // REAL คือตัวเลขทศนิยม
+  console.log("✅ Added 'stock' column to products.");
+} catch (e) { /* ปล่อยผ่านถ้ามีแล้ว */ }
+
+
 console.log('Connected to SQLite Database at', dbPath);
 
 module.exports = db;

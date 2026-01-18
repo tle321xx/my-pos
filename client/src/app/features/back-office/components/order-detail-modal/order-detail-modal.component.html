@@ -25,10 +25,10 @@
           <div class="row g-0">
             <div class="col-md-4 bg-light border-end p-4">
               <h6 class="fw-bold text-secondary mb-3">ข้อมูลการขาย</h6>
-              <div class="mb-2">
-                <small class="text-muted d-block">พนักงานขาย</small>
-                <strong>{{ order.staff_name || '-' }}</strong>
-              </div>
+              <div class="mb-3">
+  <label class="fw-bold text-muted small">พนักงานขาย</label>
+  <div class="fs-5">{{ order?.staff_name || 'System' }}</div>
+</div>
               <div class="mb-2">
                 <small class="text-muted d-block">วิธีชำระเงิน</small>
                 <span class="badge bg-secondary">{{ order.payment_method | uppercase }}</span>

@@ -15,4 +15,6 @@ export interface Product {
   thc?: number;      // เปอร์เซ็นต์ THC
   ratio?: string;    // สัดส่วน (เช่น Indica 60%)
   scent?: string;    // กลิ่น
+  stock?: number;
+  min_stock?: number; // [เพิ่ม]
 }

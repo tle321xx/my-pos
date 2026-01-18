@@ -1,8 +1,9 @@
 <div class="card h-100 border-0 shadow-sm user-select-none" 
      [class.border-success]="quantity > 0" 
      [class.border]="quantity > 0"
+     [class.out-of-stock]="(product.stock || 0) <= 0"
      style="cursor: pointer; transition: transform 0.2s;"
-     (click)="onAdd($event)">
+     (click)="(product.stock || 0) > 0 && onAdd($event)">
   
   <div class="position-relative bg-light" style="height: 140px;">
     <img *ngIf="product.image" [src]="product.image" class="card-img-top h-100 w-100 object-fit-cover" alt="img">
@@ -18,6 +19,11 @@
        </span>
        <span *ngIf="product.tags?.includes('3g100')" class="badge bg-danger">PROMO</span>
     </div>
+
+    <div *ngIf="(product.stock || 0) <= 0" 
+         class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
+      <span class="badge bg-danger fs-6 shadow">สินค้าหมด</span>
+    </div>
   </div>
 
   <div class="card-body p-2 d-flex flex-column text-center">
@@ -27,7 +33,6 @@
       <div *ngIf="product.ratio" class="text-truncate"><small>🧬 {{product.ratio}}</small></div>
       <div *ngIf="product.scent" class="text-truncate"><small>👃 {{product.scent}}</small></div>
     </div>
-
     <div *ngIf="product.category !== 'weed'" class="small text-muted mb-auto">
        <span *ngIf="product.unit === 'g'">{{product.weight}}g</span>
        <span *ngIf="product.unit !== 'g'">{{product.unit}}</span>
@@ -37,14 +42,26 @@
   </div>
 
   <div class="card-footer p-2 bg-white border-0">
-    <button *ngIf="quantity === 0" class="btn btn-outline-success w-100 btn-sm fw-bold">
-      + ใส่ตะกร้า
+    <button *ngIf="quantity === 0" 
+            class="btn w-100 btn-sm fw-bold"
+            [class.btn-outline-success]="(product.stock || 0) > 0"
+            [class.btn-secondary]="(product.stock || 0) <= 0"
+            [disabled]="(product.stock || 0) <= 0">
+      {{ (product.stock || 0) > 0 ? '+ ใส่ตะกร้า' : 'สินค้าหมด' }}
     </button>
 
     <div *ngIf="quantity > 0" class="d-flex justify-content-between align-items-center bg-success text-white rounded p-1">
-      <button class="btn btn-sm btn-success p-0 px-2" (click)="onRemove($event)"><i class="bi bi-dash"></i></button>
+      <button class="btn btn-sm btn-success p-0 px-2" (click)="onRemove($event)">
+        <i class="bi bi-dash"></i>
+      </button>
+      
       <span class="fw-bold">{{quantity}}</span>
-      <button class="btn btn-sm btn-success p-0 px-2" (click)="onAdd($event)"><i class="bi bi-plus"></i></button>
+      
+      <button class="btn btn-sm btn-success p-0 px-2" 
+              [style.visibility]="quantity >= (product.stock || 0) ? 'hidden' : 'visible'"
+              (click)="onAdd($event)">
+        <i class="bi bi-plus"></i>
+      </button>
     </div>
   </div>
 

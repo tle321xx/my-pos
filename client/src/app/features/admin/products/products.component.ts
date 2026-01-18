@@ -24,13 +24,17 @@ export class ProductsComponent implements OnInit {
   // Modal State
   isModalOpen: boolean = false;
   isEditMode: boolean = false;
-  editingProduct: Product | null = null;
+  editingProduct!: Product ;
   selectedFile: File | null = null;
   imagePreview: string | ArrayBuffer | null = null;
 
   pagedProducts: Product[] = []; // ข้อมูลที่จะแสดงผลจริงในหน้าปัจจุบัน (ตัดมาแล้ว)
   pageSize = 10; // จำนวนต่อหน้า
   pageIndex = 0; // หน้าปัจจุบัน (เริ่มที่ 0)
+
+  isRestockModalOpen = false;
+  restockProduct: Product | null = null;
+  restockAmount: number = 0;
   
   // อ้างอิงถึงตัว Paginator ใน HTML เพื่อสั่ง reset หน้าเวลากรองข้อมูล
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -118,7 +122,8 @@ export class ProductsComponent implements OnInit {
     this.imagePreview = null;
     this.editingProduct = { 
       id: 0, name: '', price: 0, unit: 'g', weight: 1, 
-      category: 'weed', strain: 'Indica', active: true, tags: [] 
+      category: 'weed', strain: 'Indica', active: true, tags: [] , 
+     min_stock: 10
     };
     this.isModalOpen = true;
   }
@@ -133,7 +138,7 @@ export class ProductsComponent implements OnInit {
 
   closeModal() {
     this.isModalOpen = false;
-    this.editingProduct = null;
+    this.editingProduct
     this.selectedFile = null;
     this.imagePreview = null;
   }
@@ -193,5 +198,34 @@ export class ProductsComponent implements OnInit {
     if(confirm('ยืนยันการลบ?')) {
       this.productService.deleteProduct(id).subscribe();
     }
+  }
+
+  openRestockModal(p: Product) {
+    this.restockProduct = p;
+    this.restockAmount = 0; // รีเซ็ตค่า
+    this.isRestockModalOpen = true;
+  }
+
+  // [เพิ่ม] ปิด Modal
+  closeRestockModal() {
+    this.isRestockModalOpen = false;
+    this.restockProduct = null;
+  }
+
+  // [เพิ่ม] ยืนยันการเติม
+  confirmRestock() {
+    if (!this.restockProduct || !this.restockAmount) return;
+
+    this.productService.updateStock(this.restockProduct.id, this.restockAmount).subscribe({
+      next: (res) => {
+        // อัปเดตค่าในตารางทันทีไม่ต้องโหลดใหม่
+        if (this.restockProduct) {
+          this.restockProduct.stock = res.newStock;
+        }
+        this.closeRestockModal();
+        alert(`✅ เติมสต็อกเรียบร้อย! (คงเหลือปัจจุบัน: ${res.newStock})`);
+      },
+      error: (err) => alert('เกิดข้อผิดพลาด: ' + err.message)
+    });
   }
 }

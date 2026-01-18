@@ -5,11 +5,11 @@ import { Product } from '../models/product';
 import { map } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProductService {
   private apiUrl = 'http://localhost:3000/api';
-  
+
   // ใช้ Subject เพื่อให้ Component อื่นๆ รู้ว่าข้อมูลเปลี่ยนแล้ว (เช่น POS ต้องรู้ว่าเมนูเปลี่ยน)
   private productsSubject = new BehaviorSubject<Product[]>([]);
   products$ = this.productsSubject.asObservable();
@@ -20,7 +20,7 @@ export class ProductService {
 
   // โหลดข้อมูลจาก Server
   loadProducts() {
-    this.http.get<Product[]>(`${this.apiUrl}/products`).subscribe(data => {
+    this.http.get<Product[]>(`${this.apiUrl}/products`).subscribe((data) => {
       this.productsSubject.next(data);
     });
   }
@@ -31,7 +31,7 @@ export class ProductService {
 
   addProduct(data: FormData): Observable<any> {
     return this.http.post(`${this.apiUrl}/products`, data).pipe(
-      map(res => {
+      map((res) => {
         this.loadProducts(); // โหลดข้อมูลใหม่ทันที
         return res;
       })
@@ -39,9 +39,9 @@ export class ProductService {
   }
 
   // แก้ไขสินค้า (รวมถึงการ Toggle Active)
-updateProduct(id: number, data: FormData | Product): Observable<any> {
+  updateProduct(id: number, data: FormData | Product): Observable<any> {
     return this.http.put(`${this.apiUrl}/products/${id}`, data).pipe(
-      map(res => {
+      map((res) => {
         this.loadProducts();
         return res;
       })
@@ -51,10 +51,14 @@ updateProduct(id: number, data: FormData | Product): Observable<any> {
   // ลบสินค้า
   deleteProduct(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/products/${id}`).pipe(
-      map(res => {
+      map((res) => {
         this.loadProducts(); // โหลดข้อมูลใหม่ทันทีหลังลบเสร็จ
         return res;
       })
     );
+  }
+
+  updateStock(id: number, amount: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/products/${id}/stock`, { amount });
   }
 }

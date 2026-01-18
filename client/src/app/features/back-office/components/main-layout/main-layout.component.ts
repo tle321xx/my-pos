@@ -11,9 +11,16 @@ import { AuthService } from '../../../../core/services/auth.service';
   templateUrl: './main-layout.component.html',
 })
 export class MainLayoutComponent {
-  currentUser: any;
+  currentUser: any = null; 
   constructor(private authService: AuthService, private router: Router) {
     this.authService.currentUser$.subscribe(u => this.currentUser = u);
+  }
+
+  ngOnInit() {
+    // [4] Subscribe เพื่อดูว่าใคร Login อยู่
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
   }
   logout() { this.authService.logout(); }
 }

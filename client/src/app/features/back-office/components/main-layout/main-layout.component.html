@@ -1,52 +1,85 @@
-    <div class="d-flex vh-100 overflow-hidden">
-      <aside class="d-flex flex-column p-0 bg-dark text-white" style="width: 260px; flex-shrink: 0;">
-        <div class="p-4 text-center bg-success text-white mb-3">
-          <h3 class="m-0 fw-bold">Racha Weed</h3>
-          <small class="opacity-75">Back Office System</small>
-        </div>
-
-        <nav class="nav nav-pills flex-column mb-auto px-3">
-          <li class="nav-item mb-1">
-            <a routerLink="/" class="nav-link text-white-50 d-flex align-items-center gap-2">
-               <i class="bi bi-arrow-left-circle"></i> กลับไปหน้าขาย (POS)
-            </a>
-          </li>
-          <hr class="text-secondary my-2">
-          
-          <li class="nav-item mb-1">
-            <a routerLink="/admin/dashboard" routerLinkActive="active bg-success" class="nav-link text-white d-flex align-items-center gap-2">
-               <i class="bi bi-speedometer2"></i> Dashboard
-            </a>
-          </li>
-          <li class="nav-item mb-1">
-            <a routerLink="/admin/products" routerLinkActive="active bg-success" class="nav-link text-white d-flex align-items-center gap-2">
-               <i class="bi bi-box-seam"></i> จัดการสินค้า
-            </a>
-          </li>
-          <li class="nav-item mb-1" *ngIf="currentUser?.role === 'admin'">
-            <a routerLink="/admin/people" routerLinkActive="active bg-success" class="nav-link text-white d-flex align-items-center gap-2">
-               <i class="bi bi-people"></i> พนักงาน & ลูกค้า
-            </a>
-          </li>
-          <li class="nav-item mb-1">
-   <a routerLink="/admin/sales" routerLinkActive="active bg-success" class="nav-link text-white d-flex align-items-center gap-2">
-      <i class="bi bi-receipt-cutoff"></i> ประวัติการขาย
-   </a>
-</li>
-        </nav>
-
-        <div class="p-3 border-top border-secondary mt-auto">
-          <div class="d-flex align-items-center justify-content-between">
-             <div class="d-flex align-items-center gap-2">
-               <i class="bi bi-person-circle fs-4"></i>
-               <span>{{ currentUser?.name }}</span>
-             </div>
-             <button (click)="logout()" class="btn btn-sm btn-outline-danger"><i class="bi bi-power"></i></button>
-          </div>
-        </div>
-      </aside>
-
-      <main class="flex-grow-1 bg-light overflow-auto position-relative">
-        <router-outlet></router-outlet>
-      </main>
+<div class="d-flex vh-100 overflow-hidden">
+  <aside
+    class="d-flex flex-column p-0 bg-dark text-white"
+    style="width: 260px; flex-shrink: 0"
+  >
+    <div class="p-4 text-center bg-success text-white mb-3">
+      <h3 class="m-0 fw-bold">Racha Weed</h3>
+      <small class="opacity-75">Back Office System</small>
     </div>
+
+    <nav class="nav nav-pills flex-column mb-auto px-3">
+      <li class="nav-item mb-1">
+        <a
+          routerLink="/"
+          class="nav-link text-white-50 d-flex align-items-center gap-2"
+        >
+          <i class="bi bi-arrow-left-circle"></i> กลับไปหน้าขาย (POS)
+        </a>
+      </li>
+      <hr class="text-secondary my-2" />
+
+      <li class="nav-item mb-1">
+        <a
+          routerLink="/admin/dashboard"
+          routerLinkActive="active bg-success"
+          class="nav-link text-white d-flex align-items-center gap-2"
+        >
+          <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a
+          routerLink="/admin/products"
+          routerLinkActive="active bg-success"
+          class="nav-link text-white d-flex align-items-center gap-2"
+        >
+          <i class="bi bi-box-seam"></i> จัดการสินค้า
+        </a>
+      </li>
+
+      <li class="nav-item mb-1">
+        <a
+          routerLink="/admin/people"
+          routerLinkActive="active bg-success"
+          class="nav-link text-white d-flex align-items-center gap-2"
+        >
+          <i
+            class="bi"
+            [class.bi-people-fill]="currentUser?.role === 'admin'"
+            [class.bi-person-hearts]="currentUser?.role !== 'admin'"
+          ></i>
+
+          <span *ngIf="currentUser?.role === 'admin'">พนักงาน & ลูกค้า</span>
+          <span *ngIf="currentUser?.role !== 'admin'">ลูกค้าสมาชิก</span>
+        </a>
+      </li>
+
+      <li class="nav-item mb-1">
+        <a
+          routerLink="/admin/sales"
+          routerLinkActive="active bg-success"
+          class="nav-link text-white d-flex align-items-center gap-2"
+        >
+          <i class="bi bi-receipt-cutoff"></i> ประวัติการขาย
+        </a>
+      </li>
+    </nav>
+
+    <div class="p-3 border-top border-secondary mt-auto">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-person-circle fs-4"></i>
+          <span>{{ currentUser?.name }}</span>
+        </div>
+        <button (click)="logout()" class="btn btn-sm btn-outline-danger">
+          <i class="bi bi-power"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="flex-grow-1 bg-light overflow-auto position-relative">
+    <router-outlet></router-outlet>
+  </main>
+</div>

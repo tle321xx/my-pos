@@ -4,7 +4,7 @@ import { MainLayoutComponent } from './components/main-layout/main-layout.compon
 
 // Import Component ทั้งหมด
 import { ProductsComponent } from '../admin/products/products.component';
-import { PeopleComponent } from '../back-office/people/people.component';
+import { PeopleComponent } from './pages/people/people.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component'; // <--- 1. Import
 import { SalesHistoryComponent } from './pages/sales-history/sales-history.component';
 

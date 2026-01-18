@@ -21,17 +21,28 @@ export class CartService {
     return this.http.get<Product[]>(`${this.apiUrl}/products`);
   }
 
-  addToCart(product: Product) {
+addToCart(product: Product) {
     const currentItems = this._cartItems.getValue();
     const foundItem = currentItems.find(p => p.id === product.id);
+
+    // --- [ส่วนที่เพิ่ม] ตรวจสอบสต็อกก่อนเพิ่ม ---
+    const currentQty = foundItem ? (foundItem.quantity || 0) : 0;
+    const maxStock = product.stock || 0; // ดึงค่าสต็อก (ถ้าไม่มีให้เป็น 0)
+
+    if (currentQty + 1 > maxStock) {
+      // alert(`ไม่สามารถเพิ่มสินค้าได้: มีสินค้าเพียง ${maxStock} ชิ้นในสต็อก`);
+      return; // หยุดการทำงาน ไม่เพิ่มสินค้าเข้าตะกร้า
+    }
+    // ----------------------------------------
 
     if (foundItem) {
       foundItem.quantity = (foundItem.quantity || 1) + 1;
     } else {
+      // product ที่ส่งเข้ามาจะมีค่า stock ติดมาด้วยเพราะ spread operator ...product
       currentItems.push({ ...product, quantity: 1 });
     }
     
-    this._cartItems.next([...currentItems]); // Update state
+    this._cartItems.next([...currentItems]); 
   }
 
   getTotal(): number {

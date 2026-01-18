@@ -7,3 +7,15 @@
   transform: translateY(-5px);
   box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
 }
+
+.out-of-stock {
+  opacity: 0.6;              /* ทำให้จางลง */
+  filter: grayscale(100%);   /* ทำให้เป็นสีขาวดำ */
+  cursor: not-allowed !important; /* เปลี่ยนเมาส์เป็นเครื่องหมายห้าม */
+  
+  /* ปิด Hover Effect */
+  &:hover {
+    transform: none;
+    box-shadow: none !important;
+  }
+}

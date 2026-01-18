@@ -1,133 +1,269 @@
 <div class="container-fluid p-4">
-  <h2 class="fw-bold mb-4"><i class="bi bi-speedometer2"></i> ภาพรวมร้านค้า</h2>
-
-  <div class="row g-4 mb-4">
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm stat-card h-100">
-        <div class="card-body d-flex align-items-center gap-3">
-          <div class="icon-box bg-success bg-opacity-10 text-success">
-            <i class="bi bi-currency-dollar"></i>
-          </div>
-          <div>
-            <div class="text-muted small">ยอดขายวันนี้</div>
-            <h4 class="fw-bold m-0">{{ stats.todaySales | number }} ฿</h4>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm stat-card h-100">
-        <div class="card-body d-flex align-items-center gap-3">
-          <div class="icon-box bg-primary bg-opacity-10 text-primary">
-            <i class="bi bi-receipt"></i>
-          </div>
-          <div>
-            <div class="text-muted small">จำนวนบิล</div>
-            <h4 class="fw-bold m-0">{{ stats.totalOrders | number }}</h4>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm stat-card h-100">
-        <div class="card-body d-flex align-items-center gap-3">
-          <div class="icon-box bg-info bg-opacity-10 text-info">
-            <i class="bi bi-person-plus-fill"></i>
-          </div>
-          <div>
-            <div class="text-muted small">สมาชิกใหม่</div>
-            <h4 class="fw-bold m-0">{{ stats.newMembers }} คน</h4>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm stat-card h-100">
-        <div class="card-body d-flex align-items-center gap-3">
-          <div class="icon-box bg-warning bg-opacity-10 text-warning">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-          </div>
-          <div>
-            <div class="text-muted small">สินค้าใกล้หมด</div>
-            <h4 class="fw-bold m-0">{{ stats.lowStock }} รายการ</h4>
-          </div>
-        </div>
-      </div>
-    </div>
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold m-0"><i class="bi bi-speedometer2"></i> Dashboard</h2>
+    <small class="text-muted">{{ activeTab === 'overview' ? 'ภาพรวมระบบแบบ Real-time' : 'รายงานสรุปข้อมูลเชิงลึก' }}</small>
   </div>
 
-  <div class="card border-0 shadow-sm">
+  <ul class="nav nav-pills mb-4 bg-white p-2 rounded shadow-sm d-inline-flex">
+    <li class="nav-item">
+      <a class="nav-link fw-bold px-4" 
+         [class.active]="activeTab === 'overview'" 
+         [class.bg-primary]="activeTab === 'overview'"
+         (click)="setActiveTab('overview')" 
+         style="cursor: pointer;">
+        <i class="bi bi-activity me-2"></i> ภาพรวมวันนี้
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link fw-bold px-4" 
+         [class.active]="activeTab === 'report'" 
+         [class.bg-success]="activeTab === 'report'"
+         (click)="setActiveTab('report')" 
+         style="cursor: pointer;">
+        <i class="bi bi-bar-chart-fill me-2"></i> สรุปยอดขาย
+      </a>
+    </li>
+  </ul>
+
+  <div *ngIf="activeTab === 'overview'" class="fade-in">
+    
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+          <div class="card bg-primary text-white h-100 shadow-sm border-0">
+            <div class="card-body">
+              <h6 class="opacity-75">ยอดขายวันนี้</h6>
+              <h2 class="fw-bold mt-2">{{ stats.sales | number }} ฿</h2>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-success text-white h-100 shadow-sm border-0">
+            <div class="card-body">
+              <h6 class="opacity-75">จำนวนบิล</h6>
+              <h2 class="fw-bold mt-2">{{ stats.bills | number }} บิล</h2>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 position-relative">
+            <div class="card text-white h-100 shadow-sm border-0"
+                 [class.bg-danger]="stats.lowStock.length > 0"
+                 [class.bg-secondary]="stats.lowStock.length === 0"
+                 (click)="showLowStockPopup = !showLowStockPopup"
+                 style="cursor: pointer;">
+              <div class="card-body">
+                <h6 class="opacity-75">สินค้าใกล้หมด (< 10)</h6>
+                <h2 class="fw-bold mt-2">
+                  <i class="bi bi-exclamation-triangle-fill me-2" *ngIf="stats.lowStock.length > 0"></i>
+                  {{ stats.lowStock.length }} รายการ
+                </h2>
+              </div>
+            </div>
+            <div *ngIf="showLowStockPopup && stats.lowStock.length > 0" 
+                 class="card position-absolute shadow-lg border-0 mt-2 start-0 end-0" style="z-index: 1000; max-height: 300px; overflow-y: auto">
+                 <div class="card-header bg-danger text-white"><small>ต้องเติมสต็อก</small></div>
+                 <ul class="list-group list-group-flush small text-dark">
+                    <li *ngFor="let item of stats.lowStock" class="list-group-item d-flex justify-content-between">
+                        {{item.name}} <span class="badge bg-danger">{{item.stock}} {{item.unit}}</span>
+                    </li>
+                 </ul>
+                 <div class="card-footer text-center bg-light cursor-pointer text-danger fw-bold" (click)="navigateToRestock()">ไปหน้าเติมของ</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white h-100 shadow-sm border-0">
+              <div class="card-body">
+                <h6 class="opacity-75">สินค้าทั้งหมด</h6>
+                <h2 class="fw-bold mt-2">{{ stats.products }} รายการ</h2>
+              </div>
+            </div>
+        </div>
+    </div>
+<div class="card border-0 shadow-sm">
     <div class="card-header bg-white py-3 border-bottom-0">
-      <h5 class="fw-bold m-0"><i class="bi bi-clock-history"></i> รายการขายล่าสุด</h5>
+      <h5 class="fw-bold m-0">
+        <i class="bi bi-clock-history"></i> รายการขายล่าสุด
+      </h5>
     </div>
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0">
-  <thead class="table-light">
-    <tr>
-      <th class="ps-4">เลขที่บิล</th>
-      <th>เวลา</th>
-      <th>พนักงานขาย</th>
-      <th>จำนวนรายการ</th>
-      <th class="text-end">ยอดรวม</th>
-      <th class="text-end pe-4">จัดการ</th> 
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let order of recentOrders">
-      <td class="ps-4 fw-bold text-primary">{{ order.receiptNo || order.id }}</td>
-      <td class="text-muted">{{ order.time }} น.</td>
-      <td>
-        <span class="badge bg-light text-dark border"><i class="bi bi-person"></i> {{ order.staff }}</span>
-      </td>
-      <td>{{ order.items || '-' }}</td>
-      <td class="text-end fw-bold text-success">+{{ order.total | number }} ฿</td>
-      
-      <td class="text-end pe-4">
-        <button class="btn btn-sm btn-outline-primary" (click)="openOrderDetails(order.id)">
-          <i class="bi bi-eye-fill"></i>
-        </button>
-      </td>
-    </tr>
-  </tbody>
-</table>
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4">เลขที่บิล</th>
+            <th>เวลา</th>
+            <th>พนักงานขาย</th>
+            <th>จำนวนรายการ</th>
+            <th class="text-end">ยอดรวม</th>
+            <th class="text-end pe-4">จัดการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of recentOrders">
+            <td class="ps-4 fw-bold text-primary">
+              {{ order.receiptNo }}
+            </td>
 
-<app-order-detail-modal></app-order-detail-modal>
+            <td class="text-muted">{{ order.createdAt | date:'HH:mm' }} น.</td>
+
+            <td>
+              <span class="badge bg-light text-dark border">
+                <i class="bi bi-person-fill"></i> {{ order.staff }}
+              </span>
+            </td>
+
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                
+                <div *ngIf="order.stats.weedItems > 0" class="d-flex align-items-center text-success" title="สินค้ากัญชา">
+                  <i class="bi bi-flower3 fs-5 me-1"></i>
+                  <span class="fw-bold me-1">{{ order.stats.weedItems }}</span>
+                  <small class="text-muted me-1">รายการ,</small>
+                  <span class="fw-bold">{{ order.stats.weedGrams | number:'1.0-2' }}g</span>
+                </div>
+
+                <div *ngIf="order.stats.gearPieces > 0" class="d-flex align-items-center text-secondary" title="อุปกรณ์">
+                  <i class="bi bi-tools fs-6 me-1"></i>
+                  <span class="fw-bold">{{ order.stats.gearPieces }}</span>
+                  <small class="ms-1 text-muted">ชิ้น</small>
+                </div>
+
+                <span *ngIf="order.stats.weedItems === 0 && order.stats.gearPieces === 0" class="text-muted">-</span>
+              </div>
+            </td>
+
+            <td class="text-end fw-bold text-success">
+              +{{ order.total | number }} ฿
+            </td>
+
+            <td class="text-end pe-4">
+              <button
+                class="btn btn-sm btn-outline-primary"
+                (click)="openOrderDetails(order.id)"
+              >
+                <i class="bi bi-eye-fill"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <app-order-detail-modal></app-order-detail-modal>
     </div>
     <div class="card-footer bg-white text-center py-3">
-       <small class="text-muted">แสดง 5 รายการล่าสุด</small>
+      <small class="text-muted">แสดง 5 รายการล่าสุด</small>
     </div>
   </div>
-  <div class="row g-4 mb-4">
-  <div class="col-md-8">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white py-3">
-        <h5 class="fw-bold m-0"><i class="bi bi-graph-up"></i> แนวโน้มยอดขายวันนี้</h5>
-      </div>
-      <div class="card-body">
-        <canvas baseChart
-          [data]="lineChartData"
-          [options]="lineChartOptions"
-          [type]="'line'">
-        </canvas>
-      </div>
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3"><h5 class="fw-bold m-0"><i class="bi bi-graph-up"></i> ยอดขายรายชั่วโมง</h5></div>
+                <div class="card-body">
+                    <canvas baseChart [data]="lineChartData" [options]="lineChartOptions" [type]="'line'" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3"><h5 class="fw-bold m-0"><i class="bi bi-pie-chart"></i> สัดส่วนยอดขาย</h5></div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <canvas baseChart [data]="doughnutChartData" [type]="'doughnut'"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header bg-white py-3"><h5 class="fw-bold m-0"><i class="bi bi-receipt"></i> บิลล่าสุด</h5></div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light"><tr><th class="ps-4">เลขที่บิล</th><th>เวลา</th><th>พนักงาน</th><th class="text-end">ยอดรวม</th><th class="text-end pe-4">ดู</th></tr></thead>
+                <tbody>
+                    <tr *ngFor="let order of recentOrders">
+                        <td class="ps-4 fw-bold text-primary">{{ order.receiptNo }}</td>
+                        <td class="text-muted">{{ order.createdAt | date:'HH:mm' }} น.</td>
+                        <td>{{ order.staff }}</td>
+                        <td class="text-end fw-bold text-success">+{{ order.total | number }} ฿</td>
+                        <td class="text-end pe-4"><button class="btn btn-sm btn-outline-primary" (click)="openOrderDetails(order.id)"><i class="bi bi-eye"></i></button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
   </div>
 
-  <div class="col-md-4">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white py-3">
-        <h5 class="fw-bold m-0"><i class="bi bi-pie-chart"></i> สัดส่วนสินค้า</h5>
-      </div>
-      <div class="card-body d-flex align-items-center justify-content-center">
-        <canvas baseChart
-          [data]="doughnutChartData"
-          [type]="'doughnut'">
-        </canvas>
-      </div>
+  <div *ngIf="activeTab === 'report'" class="fade-in">
+    
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="p-3 bg-white rounded shadow-sm border-start border-5 border-primary h-100">
+                <small class="text-muted text-uppercase fw-bold">วันนี้ {{ dateLabels.today }}</small>
+                <h3 class="fw-bold text-primary mt-1">{{ summaryData.sales.today | number }} ฿</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 bg-white rounded shadow-sm border-start border-5 border-info h-100">
+                <small class="text-muted text-uppercase fw-bold">สัปดาห์นี้ {{ dateLabels.week }}</small>
+                <h3 class="fw-bold text-info mt-1">{{ summaryData.sales.week | number }} ฿</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 bg-white rounded shadow-sm border-start border-5 border-warning h-100">
+                <small class="text-muted text-uppercase fw-bold">เดือนนี้ {{ dateLabels.month }}</small>
+                <h3 class="fw-bold text-warning mt-1">{{ summaryData.sales.month | number }} ฿</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 bg-white rounded shadow-sm border-start border-5 border-secondary h-100">
+                <small class="text-muted text-uppercase fw-bold">เดือนที่แล้ว {{ dateLabels.lastMonth }}</small>
+                <h3 class="fw-bold text-secondary mt-1">{{ summaryData.sales.lastMonth | number }} ฿</h3>
+            </div>
+        </div>
     </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold m-0 text-success"><i class="bi bi-flower1"></i> สรุปยอดขายกัญชาวันนี้</h5>
+            <span class="badge bg-success bg-opacity-10 text-success border border-success">Daily Weed Report</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">ชื่อสินค้า / สายพันธุ์</th>
+                        <th class="text-center">ปริมาณที่ขาย (g)</th>
+                        <th class="text-end pe-4">ยอดขายรวม (บาท)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of summaryData.weedDaily">
+                        <td class="ps-4">
+                            <div class="fw-bold">{{ item.product_name }}</div>
+                            <small class="text-muted" *ngIf="item.strain">{{ item.strain }}</small>
+                        </td>
+                        <td class="text-center">
+                            <span class="fs-5 fw-bold text-dark">{{ item.total_qty | number:'1.0-2' }}</span> <small class="text-muted">g</small>
+                        </td>
+                        <td class="text-end pe-4">
+                            <span class="fw-bold text-success">+{{ item.total_sales | number }}</span>
+                        </td>
+                    </tr>
+                    <tr *ngIf="summaryData.weedDaily.length === 0">
+                        <td colspan="3" class="text-center py-5 text-muted">วันนี้ยังไม่มีรายการขายกัญชา</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
   </div>
+
+  <app-order-detail-modal></app-order-detail-modal>
+  
+  <div *ngIf="showLowStockPopup" (click)="showLowStockPopup = false" style="position: fixed; top:0; left:0; width:100%; height:100%; z-index: 999;"></div>
+
 </div>
-</div>
+
+<style>
+    .fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>

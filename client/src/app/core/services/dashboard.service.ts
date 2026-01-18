@@ -11,9 +11,10 @@ export class DashboardService {
 
   constructor(private http: HttpClient) {}
 
-  getStats(): Observable<any> {
-    // URL จะเป็น: http://localhost:3000/api/dashboard/stats
-    return this.http.get<any>(`${this.apiUrl}/dashboard/stats`);
+getStats(): Observable<any> {
+    // [แก้ไข] ต้องต่อท้ายด้วย /dashboard
+    // ผลลัพธ์จะเป็น: http://localhost:3000/api/dashboard
+    return this.http.get<any>(`${this.apiUrl}/dashboard`);
   }
 
   getRecentOrders(): Observable<any[]> {
@@ -24,5 +25,9 @@ export class DashboardService {
 
   getChartData(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/dashboard/charts`);
+  }
+
+  getSummary(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/dashboard/summary`);
   }
 }

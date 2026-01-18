@@ -42,16 +42,22 @@ exports.createOrder = async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
+    const updateStock = db.prepare(`
+      UPDATE products SET stock = stock - ? WHERE id = ?
+    `);
+
     items.forEach(item => {
+      const qty = item.quantity || 1;
       insertItem.run(
         newOrderId, 
         item.id, 
         item.name, 
         item.strain || null, 
-        item.quantity || 1, 
+        qty,
         item.price, 
         (item.price * (item.quantity || 1))
       );
+      updateStock.run(qty, item.id);
     });
 
     console.log(`Order Saved: ${receiptNo}`);
@@ -116,23 +122,59 @@ exports.createOrder = async (req, res) => {
 
 exports.getRecentOrders = (req, res) => {
   try {
-    // ดึง 5 รายการล่าสุด เรียงจาก id มากไปน้อย (ล่าสุดอยู่บน)
+    // 1. ดึง 5 ออเดอร์ล่าสุดของวันนี้
     const orders = db.prepare(`
-      SELECT id, receipt_no, total_price, created_at, payment_method 
-      FROM orders 
-      ORDER BY id DESC 
+      SELECT id, receipt_no, total_price, created_at, staff_name
+      FROM orders
+      WHERE date(created_at) = date('now', 'localtime')
+      ORDER BY created_at DESC
       LIMIT 5
     `).all();
 
-    // จัด Format วันที่และเวลาให้สวยงามก่อนส่งกลับ (Optional)
-    const formattedOrders = orders.map(o => ({
-      id: o.id,             // <--- [แก้] ส่ง ID จริงๆ ที่เป็นตัวเลข
-      receiptNo: o.receipt_no,
-      time: new Date(o.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
-      staff: 'System', // (ถ้าในอนาคตเก็บ user_id ใน orders ค่อยมาจอยตาราง users)
-      items: 0, // (ถ้าอยากได้จำนวนชิ้น ต้อง count จาก order_items เพิ่ม)
-      total: o.total_price
-    }));
+    // 2. เตรียม Query สำหรับดึงรายละเอียดสินค้าในแต่ละบิล
+    const getItems = db.prepare(`
+      SELECT oi.quantity, p.category, p.unit 
+      FROM order_items oi 
+      JOIN products p ON oi.product_id = p.id 
+      WHERE oi.order_id = ?
+    `);
+
+    // 3. วนลูปเพื่อคำนวณยอดแยกประเภท (Weed vs Gear)
+    const formattedOrders = orders.map(o => {
+      const items = getItems.all(o.id);
+      
+      let weedItems = 0; // จำนวนรายการกัญชา (เช่น ซื้อ 2 สายพันธุ์ = 2)
+      let weedGrams = 0; // น้ำหนักรวม (g)
+      let gearPieces = 0; // จำนวนชิ้นอุปกรณ์
+
+      items.forEach(item => {
+        if (item.category === 'weed') {
+          weedItems++; 
+          if (item.unit === 'g') {
+            weedGrams += item.quantity;
+          }
+        } else {
+           // นับเป็นอุปกรณ์ทั้งหมด
+           gearPieces += item.quantity;
+        }
+      });
+
+      return {
+        id: o.id,
+        receiptNo: o.receipt_no,
+        // ส่งเวลาดิบๆ ไปให้ Frontend แปลงด้วย DatePipe (แก้ปัญหา Invalid Date)
+        createdAt: o.created_at, 
+        // ใช้ชื่อพนักงานจาก DB ถ้าไม่มีให้ขึ้น System
+        staff: o.staff_name || 'System', 
+        total: o.total_price,
+        // ส่งข้อมูลสถิติที่คำนวณแล้วไปแสดงผล
+        stats: {
+          weedItems,
+          weedGrams,
+          gearPieces
+        }
+      };
+    });
 
     res.json(formattedOrders);
   } catch (error) {

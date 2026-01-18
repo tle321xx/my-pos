@@ -49,3 +49,46 @@ exports.deleteUser = (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+exports.updateUser = (req, res) => {
+  const { id } = req.params;
+  const { name, role, password } = req.body;
+  const serverUrl = `${req.protocol}://${req.get('host')}`;
+  
+  // ถ้ามีการส่งรูปใหม่มา ให้ใช้ path ใหม่, ถ้าไม่มีให้เป็น null (หรือ logic ตามต้องการ)
+  // แต่ปกติการ Update จะซับซ้อนกว่านี้หน่อย (ต้องเช็คว่าถ้าไม่ส่งรูปมา ให้ใช้รูปเดิม)
+  // เพื่อความง่ายในขั้นนี้: 
+  let imageUpdateSQL = "";
+  let params = [name, role, id];
+
+  if (req.file) {
+    const imagePath = `${serverUrl}/uploads/${req.file.filename}`;
+    imageUpdateSQL = ", image = ?";
+    params = [name, role, imagePath, id];
+  }
+
+  try {
+    // ถ้ามีการเปลี่ยนรหัสผ่าน
+    if (password && password.trim() !== "") {
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(password, salt);
+        // กรณีแก้รหัส + ข้อมูลอื่น
+        if(req.file) {
+            db.prepare(`UPDATE users SET name=?, role=?, password=?, image=? WHERE id=?`).run(name, role, hash, params[2], id);
+        } else {
+            db.prepare(`UPDATE users SET name=?, role=?, password=? WHERE id=?`).run(name, role, hash, id);
+        }
+    } else {
+        // กรณีไม่แก้รหัส
+        if(req.file) {
+             db.prepare(`UPDATE users SET name=?, role=? ${imageUpdateSQL} WHERE id=?`).run(...params);
+        } else {
+             db.prepare(`UPDATE users SET name=?, role=? WHERE id=?`).run(name, role, id);
+        }
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

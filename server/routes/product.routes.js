@@ -13,4 +13,6 @@ router.put('/:id',checkAuth, upload.single('imageFile'), productController.updat
 
 router.delete('/:id', checkAuth, productController.deleteProduct);
 
+router.patch('/:id/stock', checkAuth, productController.updateStock);
+
 module.exports = router;
